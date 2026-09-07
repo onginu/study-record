@@ -1,15 +1,78 @@
-
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"os"
 	"sort"
+	"io"
 )
 
 type StudentManager struct{
 	students []Student
+	
 }
 
+func (m *StudentManager)Save(){
+	data,err:=json.Marshal(m.students)
+	if err!=nil{
+    fmt.Println(err)
+    return
+
+}
+	file,err:=os.OpenFile(
+		"students.json",
+		os.O_WRONLY|os.O_CREATE|os.O_TRUNC,
+		0666,
+
+	)
+	if err!=nil{
+    fmt.Println(err)
+    return
+
+}
+defer file.Close()
+
+
+	_, err = file.Write(data)
+if err != nil {
+	fmt.Println(err)
+	return
+}
+
+
+}
+
+func (m *StudentManager)Load(){
+	
+file,err:=os.Open("students.json")
+if err!=nil{
+	if os.IsNotExist(err){
+		return
+	}
+	
+    fmt.Println(err)
+    return
+
+}
+
+defer file.Close()
+
+data,err:=io.ReadAll(file)
+if err!=nil{
+    fmt.Println(err)
+    return
+
+}
+
+
+	err=json.Unmarshal(data,&m.students)
+	if err!=nil{
+		fmt.Println(err)
+		return 
+	}
+	
+}
 
 func (m*StudentManager)AddStudent() {
 	var id int
@@ -27,6 +90,7 @@ func (m*StudentManager)AddStudent() {
 		Score: score,
 	}
 	m.students = append(m.students, student)
+	m.Save()
 	fmt.Println("添加成功！")
 	
 }
@@ -79,7 +143,9 @@ func (m*StudentManager)DeleteStudent()  {
 	for i, v := range m.students {
 		if v.ID == _id {
 			m.students = append(m.students[:i], m.students[i+1:]...)
+			m.Save()
 			fmt.Println("删除成功")
+
 			return 
 		}
 	}
@@ -103,6 +169,7 @@ func (m*StudentManager)ChangeStudent() {
 			fmt.Scan(&_score)
 			m.students[i].Name = _name
 			m.students[i].Score = _score
+			m.Save()
 			fmt.Println("修改成功！")
 			return 
 		}
@@ -123,13 +190,15 @@ func (m *StudentManager) SortByScore(){
 }
 
 func(m*StudentManager)AverageScore(){
+
+	if len(m.students)==0{
+	fmt.Println("暂无学生")
+	return
+}
+
 sum:=0.0
 for _,v:=range m.students{
 	sum+=v.Score
-}
-if len(m.students)==0{
-	fmt.Println("暂无学生")
-	return
 }
 
 fmt.Println("班级平均分为：")

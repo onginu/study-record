@@ -8,6 +8,7 @@ import (
 
 func main() {
 	manager:=StudentManager{}
+	manager.Load()
 	for {
 		fmt.Println("学生管理系统 ")
 		fmt.Println("1.添加")
@@ -26,6 +27,7 @@ func main() {
 		case 1:
 
 			manager.AddStudent()
+			manager.Save()
 		case 2:
 
 			manager.DeleteStudent()
@@ -47,7 +49,7 @@ func main() {
 		case 9:
 			manager.SearchByName()		
 		case 0:
-
+			manager.Save()
 			return
 
 		}
